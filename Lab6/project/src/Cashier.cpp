@@ -13,7 +13,9 @@ double Cashier::get_money() const {
   return this->money;
 }
 
-void serve_customer(std::queue<Customer>& line, std::stack<Order>& orders) {
+void Cashier::serve_customer(
+std::queue<Customer>& line,
+std::stack<Order>& orders) {
   // Get latest customer and pop off queue
   Customer customer = line.front();
   line.pop();
@@ -41,7 +43,7 @@ void serve_customer(std::queue<Customer>& line, std::stack<Order>& orders) {
   std::vector<std::string> quantities;
   std::vector<std::string> items;
 
-  for (int i = 0; i < split.size(); i++) {
+  for (unsigned i = 0; i < split.size(); i++) {
     if (i % 2 == 0) { // even
       quantities.push_back(split[i]);
     } else if (i % 2 != 0) {
@@ -51,18 +53,18 @@ void serve_customer(std::queue<Customer>& line, std::stack<Order>& orders) {
 
   std::vector<std::string> itemsWithQuantities;
 
-  for (int i = 0; i < items.size(); i++) {
-    for (int j = 0; i < std::stoi(quantities[i]); i++) {
+  for (unsigned i = 0; i < items.size(); i++) {
+    for (unsigned j = 0; i < std::stoi(quantities[i]); i++) {
       itemsWithQuantities.push_back(items[i]);
     }
   }
 
   double orderCost = calculate_order_cost(itemsWithQuantities);
 
-  if (orderCost >= 0) {
-    charge_money(orderCost);
+  if (customer.get_money() >= orderCost) {
+    customer.charge_money(orderCost);
   } else {
-    expel();
+    customer.expel();
   }
 
   // Create order and pass in items
