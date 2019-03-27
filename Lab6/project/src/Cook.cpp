@@ -95,20 +95,25 @@ Cook::Cook(SupplyRunner& runner_, Kitchen& kitchen_) :
 void Cook::prepare_dish(
   std::stack<Order>& orders,
   std::queue<std::pair<std::size_t,Dish>>& finished_dishes) {
-    Order order = orders.top();
+    if (!orders.empty()) {
+        Order order = orders.top(); // Grab top order off the stack
+        orders.pop(); // Pop it off the stack
 
-    std::vector<std::string> orderItems = order.get_items();
+        // Get items in order
+        std::vector<std::string> orderItems = order.get_items();
 
-    for (unsigned i = 0; i < orderItems.size(); i++) {
-      IngredientMap ingredients = recipes[orderItems[i]];
+        // Loop through the order items
+        for (unsigned i = 0; i < orderItems.size(); i++) {
+        IngredientMap ingredients = recipes[orderItems[i]];
 
-      std::vector<Ingredient> supplies = runner.get_ingredients(ingredients);
-      
-      Dish preparedDish = kitchen.prepare_dish(std::move(ingredients));
+        std::vector<Ingredient> supplies = runner.get_ingredients(ingredients);
+        
+        std::pair<std::size_t, Dish> dish(
+            order.get_id(),
+            kitchen.prepare_dish(std::move(ingredients))
+        );
 
-      std::pair<std::size_t, Dish> dish(order.get_id(), preparedDish);
-
-      finished_dishes.push(dish);
+        finished_dishes.push(dish);
+        }
     }
-
   }

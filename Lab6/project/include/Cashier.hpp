@@ -25,7 +25,7 @@ class Cashier {
          * @brief The current count of the unique ID (uid) of the Cashier kept 
          * for customers.
          */
-        std::size_t uid_count; 
+        std::size_t uid_count = 0; 
 
     public:
         /**

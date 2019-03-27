@@ -2,6 +2,7 @@
 #include <vector>
 #include <string>
 
+#include "Cook.hpp"
 #include "Customer.hpp"
 #include "Cashier.hpp"
 
@@ -20,41 +21,40 @@ std::stack<Order>& orders) {
   Customer customer = line.front();
   line.pop();
 
-  // Get input of items
-  std::string orderItems;
-  std::cout << "Enter the items you want to order:" << std::endl;
-  std::cin >> orderItems;
-
   // Split by space, push to vector
-  std::vector<std::string> split;
+  std::vector<std::string> splitItems = split(customer.get_order(), ' ');
 
-  for (char& c : orderItems) {
-    std::string string;
+  // for (char& c : orderItems) {
+  //   std::string string;
 
-    if (c != ' ') {
-      string = string + c;
-    } else if (c == ' ' || c == ',') {
-      split.push_back(string);
-    }
-  }
+  //   if (c != ' ') {
+  //     string = string + c;
+  //   } else if (c == ' ' || c == ',') {
+  //     split.push_back(string);
+  //   }
+  // }
 
   // If index is even, push to quantities
   // If index is odd, push to items
   std::vector<std::string> quantities;
   std::vector<std::string> items;
 
-  for (unsigned i = 0; i < split.size(); i++) {
+  for (unsigned i = 0; i < splitItems.size(); i++) {
     if (i % 2 == 0) { // even
-      quantities.push_back(split[i]);
+      quantities.push_back(splitItems[i]);
     } else if (i % 2 != 0) {
-      items.push_back(split[i]);
+      if (!(recipes.find(splitItems[i]) == recipes.end())) {
+        items.push_back(splitItems[i]);
+      } else {
+        customer.expel();
+      }
     }
   }
 
   std::vector<std::string> itemsWithQuantities;
 
   for (unsigned i = 0; i < items.size(); i++) {
-    for (unsigned j = 0; i < std::stoi(quantities[i]); i++) {
+    for (auto j = 0; j < std::stoi(quantities[i]); j++) {
       itemsWithQuantities.push_back(items[i]);
     }
   }
@@ -63,11 +63,18 @@ std::stack<Order>& orders) {
 
   if (customer.get_money() >= orderCost) {
     customer.charge_money(orderCost);
+
+    this->money = this->money + orderCost;
+
+    // Create order and pass in items
   } else {
     customer.expel();
   }
 
-  // Create order and pass in items
-  Order order(orders.size(), items);
+  if (!customer.is_expelled()) {
+    Order order(this->uid_count, itemsWithQuantities);
+    orders.push(order);
+  }
 
+  this->uid_count = this->uid_count + 1;
 }
